@@ -1,0 +1,1 @@
+const fs=require('fs');const s=fs.readFileSync('outputs/index.html','utf8');for(const re of [/text:"((?:\\.|[^"\\])*)",progress/g,/text:'((?:\\.|[^'\\])*)',progress/g])for(const m of s.matchAll(re)){const t=re.source.includes('text:\\"')?JSON.parse('"'+m[1]+'"'):m[1];console.log('---BOOK---\n'+t)}

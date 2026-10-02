@@ -1,0 +1,1 @@
+const fs=require('fs');const s=fs.readFileSync('outputs/index.html','utf8');let p=s.indexOf("book.text+='");console.log(s.slice(p-200,p+200));let end=s.indexOf("await renderHome()})().catch(console.error);",p);console.log('IIFE ending:',s.slice(end-100,end+40));

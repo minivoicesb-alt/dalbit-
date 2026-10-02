@@ -1,0 +1,10 @@
+const fs=require('fs');
+const file='outputs/index.html';let html=fs.readFileSync(file,'utf8');
+const marker="(async()=>{while(!db)await new Promise(r=>setTimeout(r,25));const id='pasted-korean-excerpt-first-incident';const book=";
+const start=html.indexOf(marker);if(start<0)throw new Error('Continuation seed block not found');
+const endMarker='})().catch(console.error);';const end=html.indexOf(endMarker,start);if(end<0)throw new Error('Seed block terminator not found');
+const old=html.slice(start,end+endMarker.length);const payload="book.text+='\\n'+";const pp=old.indexOf(payload);if(pp<0)throw new Error('Continuation payload not found');
+let i=pp+payload.length;if(old[i]!=='"')throw new Error('Expected JSON string payload');let esc=false;i++;for(;i<old.length;i++){const c=old[i];if(esc){esc=false;continue}if(c==='\\'){esc=true;continue}if(c==='"'){i++;break}}
+const passageLiteral=old.slice(pp+payload.length,i);JSON.parse(passageLiteral);
+const replacement=`(async()=>{while(!db)await new Promise(r=>setTimeout(r,25));const firstId='pasted-korean-excerpt-first-incident',chapterId='pasted-korean-excerpt-third-chapter',chapterStart='아저씨가 경찰에 신고했다.';const first=await new Promise((resolve,reject)=>{const q=db.transaction('books').objectStore('books').get(firstId);q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)});let chapterText=${passageLiteral};if(first){const splitAt=first.text.indexOf(chapterStart);if(splitAt>=0){chapterText=first.text.slice(splitAt).trim();first.text=first.text.slice(0,splitAt).trimEnd();await put('books',first)}}const chapter=await new Promise((resolve,reject)=>{const q=db.transaction('books').objectStore('books').get(chapterId);q.onsuccess=()=>resolve(q.result);q.onerror=()=>reject(q.error)});if(!chapter)await put('books',{id:chapterId,title:'세 번째 장',author:'Глава 3',text:chapterText,progress:0,created:Date.now(),lastRead:Date.now()});await renderHome()})().catch(console.error);`;
+html=html.slice(0,start)+replacement+html.slice(end+endMarker.length);fs.writeFileSync(file,html,'utf8');console.log('Moved chapter seed to a separate book and added migration from the previous combined book.');
